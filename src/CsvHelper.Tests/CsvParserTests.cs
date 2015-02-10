@@ -1133,6 +1133,34 @@ namespace CsvHelper.Tests
 			}
 		}
 
+        [TestMethod]
+        public void InconsistentColumnsNewlineTest()
+        {
+            using (var stream = new MemoryStream())
+            using (var writer = new StreamWriter(stream))
+            using (var reader = new StreamReader(stream))
+            using (var parser = new CsvParser(reader))
+            {
+                writer.WriteLine("1,2,3,4");
+                writer.WriteLine("\r\n");
+                writer.WriteLine("1,2,3,4");
+                writer.Flush();
+                stream.Position = 0;
+
+                parser.Configuration.DetectColumnCountChanges = true;
+                parser.Read();
+
+                try
+                {
+                    parser.Read();
+                    Assert.Fail();
+                }
+                catch (CsvBadDataException)
+                {
+                }
+            }
+        }
+
 		[TestMethod]
 		public void SimulateSeekingTest()
 		{
